@@ -1,0 +1,54 @@
+<script>
+        class Seance{
+            constructor(data){
+                this.id = data.id;
+                this.name = data.number;
+                this.is_vip = data.is_vip;
+                this.sites_amount = data.sites_amount;
+                this.rows = [];
+                let list = [];
+
+                data.sites.forEach(el => {
+                    if(list.length === 0){
+                        list.push(new Site(el))
+                    }else {
+                        if (list[list.length - 1].row === el.row) {
+                            list.push(new Site(el));
+                        } else {
+                            this.rows.push(list);
+                            list = [new Site(el)];
+                        }
+                    }
+                });this.rows.push(list);
+            }
+        }
+    </script>
+
+    <script>
+        class Site{
+            constructor(data=null){
+                this.id = data.id;
+                this.site_number = data.site_number;
+                this.site_position = data.site_position;
+                this.row = data.row;
+                this.is_exist = data.is_exist;
+                this.is_selected = false;
+            }
+        }
+    </script>
+
+    <script>
+        function makeAjaxRequest(method, url, data=null){
+            return axios({
+                method: method,
+                url: url,
+                data: data,
+                xsrfCookieName: 'csrftoken',
+                xsrfHeaderName: 'X-CSRFToken',
+                headers :{
+                    'Access-Control-Allow-Origin': '*',
+                    'X-Requested-With':'XMLHttpRequest'
+                },
+            });
+        }
+    </script>

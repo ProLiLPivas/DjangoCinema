@@ -1,0 +1,226 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+    <h3>{{ halls.0.cinema.title }}</h3>
+    <div class="row">
+        <div class="col-2 mt-4 ">
+            <p><strong>Other halls</strong></p>
+            {% for h in halls %}
+                <p><a href="{{h.get_absolute_url}}" class="btn btn-light">
+                    Hall #{{ h.number }}
+                </a></p>
+            {% endfor %}
+            <a class="btn btn-warning"
+               href="{{halls.0.cinema.get_create_url}}">+
+            </a>
+        </div>
+        <div id="hall" class="col-10 mt-3">
+            <h4><strong>Hall number {{ hall.number }}</strong></h4>
+            <div class="row col-6">
+            <p>
+                <a href="{{hall.get_absolute_url}}delete/"
+                   class="btn btn-danger ml-5">Delete
+                </a>
+                <a href="{{hall.get_absolute_url}}copy/"
+                   class="btn btn-light ml-5">Copy
+                </a>
+            </p>
+            <p><button v-on:click="edit_mode = ! edit_mode"
+                       class="btn btn-warning ml-5">edit hall</button></p>
+            </div>
+
+            <div  v-if="edit_mode">
+                {% include './includes/edit_hall_template.html' %}
+            </div>
+            <div v-else="">
+                {% include './includes/hall_scheme_template.html' %}
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+
+        function makeAjaxRequest(method, url, data=null){
+            return axios({
+                method: method,
+                url: url,
+                data: data,
+                xsrfCookieName: 'csrftoken',
+                xsrfHeaderName: 'X-CSRFToken',
+                headers :{
+                    'Access-Control-Allow-Origin': '*',
+                    'X-Requested-With':'XMLHttpRequest'
+                },
+            });
+        }
+
+        class Hall{
+            constructor(data){
+                this.id = data.id;
+                this.number = data.number;
+                this.is_vip = data.is_vip;
+                this.sites_amount = data.sites_amount;
+                var list = [];
+                data.sites.forEach(el => {
+                    if(list.length +1 < this.sites_amount) {
+                        list.push(new Site(el));
+                    }else{
+                        list.push(new Site(el));
+                        this.rows.push(list);
+                        list = [];
+                    }
+                });
+            }
+
+            id = 0;
+            number = '';
+            sites_amount = 0;
+            is_vip = false;
+            rows = [];
+        }
+
+        class Site{
+            constructor(data=null){
+                if (data){
+                    this.id = data.id;
+                    this.site_number = data.site_number;
+                    this.site_position = data.site_position;
+                    this.row = data.row;
+                    this.is_exist = data.is_exist;
+                }
+
+            }
+            id = 0;
+            site_number = 0;
+            site_position = 0;
+            row = 0;
+            is_exist = true;
+            is_selected = false;
+        }
+
+        new Vue({
+            el: '#hall',
+            data: {
+                //halls: [],
+                selected_hall: null,
+                edit_mode: false,
+                // selected_sites: [],
+            },
+            created(){
+                makeAjaxRequest('get', "/cinema/hall/{{slug}}/" )
+                    .then(response => {
+                        this.selected_hall = new Hall(response.data.hall);
+                    });
+            },
+            methods: {
+
+                update_hall(){
+                    formData = new FormData();
+                    formData.append('is_vip', this.selected_hall.is_vip);
+                    formData.append('number', this.selected_hall.number);
+                    new_sites = [];
+                    this.selected_hall.rows.forEach(row => {
+                        row.forEach( site => {
+                            new_sites.push(JSON.stringify({
+                                id: site.id,
+                                //hall: this.selected_hall.id,
+                                row: site.row,
+                                site_position: site.site_position,
+                                site_number: site.site_number,
+                                is_exist: site.is_exist
+                            }))
+                        })
+                    });
+                    formData.append('new_sites', new_sites);
+                    makeAjaxRequest('post', "/cinema/hall/{{slug}}/edit/", formData)
+                },
+
+                get_previous_number(row, site_obj){
+                    sitest_list = row.slice(0, site_obj.site_position - 1);
+                    max_el = {site_number: 0};
+                    sitest_list.forEach(el => {
+                        if(el.is_exist && el.site_number >= max_el.site_number){
+                            max_el = el
+                        }
+                    });
+                    return  max_el.site_number
+                },
+
+                remove_add_site(row, site_obj){
+                    if(site_obj.is_exist){
+                        for(site = site_obj.site_position;
+                        site < this.selected_hall.sites_amount; site += 1){
+                            if(row[site].is_exist){
+                                row[site].site_number -= 1;
+                            }
+                        }site_obj.site_number = 0;
+                        site_obj.is_exist = false;
+                    }else{
+                        site_obj.site_number
+                            = this.get_previous_number(row, site_obj) + 1;
+                        site_obj.is_exist = true;
+                        for(site_num = site_obj.site_position;
+                        site_num  < this.selected_hall.sites_amount; site_num +=1){
+                            if(row[site_num].is_exist){
+                                row[site_num].site_number += 1;
+                            }
+                        }
+                    }
+                },
+                add_column(){
+                    let sites_amount = this.selected_hall.sites_amount;
+                    for(row = 0; row <  this.selected_hall.rows.length; row += 1) {
+                        data = {
+                            'id': 0,
+                            'site_number': 0,
+                            'site_position': sites_amount + 1,
+                            'row': row + 1,
+                            'is_exist': true,
+                        };
+                        new_site = new Site(data);
+                        new_site.site_number = this.get_previous_number(
+                            this.selected_hall.rows[row], new_site) + 1;
+                        this.selected_hall.rows[row].push(new_site);
+                    }
+                    this.selected_hall.sites_amount += 1
+                },
+
+                remove_column(col_num){
+                    for(row = 0; row <  this.selected_hall.rows.length; row += 1){
+                        for(site = col_num;
+                        site < this.selected_hall.sites_amount; site += 1){
+                            if(this.selected_hall.rows[row][site].is_exist){
+                                this.selected_hall.rows[row][site].site_number -= 1;
+                            }
+                        }
+                        delete this.selected_hall.rows[row].splice(col_num, 1)
+                    }
+                    this.selected_hall.sites_amount -= 1
+                },
+
+                add_row(){
+                    new_row = [];
+
+                    for(site = 1; site <= this.selected_hall.sites_amount; site += 1){
+                        data = {
+                            'id': 0,
+                            'site_number': site,
+                            'site_position': site,
+                            'row': this.selected_hall.rows.length,
+                            'is_exist': true,
+                        };
+                        new_row.push(new Site(data));
+                    }
+                    this.selected_hall.rows.push(new_row);
+                },
+                remove_row(row_num){
+                    delete this.selected_hall.rows.splice(row_num, 1);
+                },
+
+            }
+        });
+</script>
+
+{%endblock%}

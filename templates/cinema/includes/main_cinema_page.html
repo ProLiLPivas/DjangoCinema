@@ -1,0 +1,55 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+    <!-- slider   -->
+    {% block slider %}
+        <div>
+            {% include './posters_slider.html' %}
+        </div>
+    {% endblock %}
+
+     <!-- cinemas list   -->
+    {% block cinemas %}
+
+    {% endblock %}
+
+    <!-- films list  -->
+    {% if films %}
+    <div>
+        <div class="row">
+            <p><strong>Films u can watch in this cinema</strong></p>
+            {% for film in films %}
+
+                    <div class="card col-2 m-2">
+                        <div class="card-body row">
+                            <a href="{{film.get_absolute_url}}" class="btn">
+    <!--                            <img src="{{ film.poster }}">-->
+                                {{ film.name }}
+
+                            </a>
+                        </div>
+                    </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <h3>Sorry, but there is no films in this cinema</h3>
+    </div>
+    {% endif %}
+
+    <!-- calendar  -->
+    {% block calendar %}
+        <div>
+            {% include 'schedules/includes/calendar.html' %}
+        </div>
+    {% endblock %}
+
+    <!-- seances this day in this cinema  -->
+    {% block table %}
+        <div>
+             {% include 'schedules/includes/schedule_table.html' %}
+        </div>
+    {% endblock %}
+
+{% endblock %}
+

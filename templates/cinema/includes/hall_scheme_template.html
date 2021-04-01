@@ -1,0 +1,23 @@
+<div>
+    {% verbatim %}
+    <table class="table-borderless ml-5">
+        <tbody>
+        <tr v-for="line, index in selected_hall.rows">
+            <th class="mr-2"> row {{ index + 1 }}</th>
+            <td v-for="(site, site_number) in line">
+                <button v-if="!site.is_exist" v-on:click=""
+                    class="btn btn-light mr-2">{{ site_number + 1 }}
+                </button>
+                <button v-else-if="site.is_selected"
+                    v-on:click="choose_site(site)"
+                    class="btn btn-success mr-2">{{ site_number + 1 }}
+                </button>
+                <button v-else="" v-on:click="choose_site(site)"
+                    class="btn btn-warning mr-2">{{ site_number + 1 }}
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    {% endverbatim %}
+</div>

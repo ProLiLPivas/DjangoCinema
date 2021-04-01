@@ -1,0 +1,22 @@
+{% extends 'base.html'%}
+
+{% block content %}
+    <a href="{% url 'create_film_url' %}" class="btn btn-warning">+</a>
+    <h2>Films</h2>
+    <ul>
+        {% for film in object_list %}
+            <h4 class="row">
+                <a href="{{ film.get_absolute_url }}">{{ film.name }}</a>
+
+                {% if film.is_showing %}
+                   <input class="form-check-input" type="checkbox" checked disabled>
+                {% else %}
+                {% endif %}
+
+                {% if film.description %}
+                    {{ film.description }}
+                {% endif %}
+            </h4>
+        {% endfor %}
+    </ul>
+{% endblock %}

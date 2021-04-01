@@ -1,0 +1,192 @@
+<div class="mt-3 mb-3">
+    {% verbatim %}
+    <div id=calendar class="card col-6">
+        <div class="card-header row col-12">
+            <div class="row col-9">
+                <button v-on:click="changeMonth(-1)"
+                        class="btn btn-light col-3" style="padding: 0px">
+                    <h5  v-if="selected_mouth.getMonth() !== 0 " class="ml-2">
+                        <{{ mouths_name[selected_mouth.getMonth() - 1] }}</h5>
+                    <h5 v-else="" class="ml-2">
+                        <{{ mouths_name[mouths_name.length - 1] }}
+                    </h5>
+                </button>
+                <button class="btn btn-light col-3"  style="padding: 0px">
+                    <h4 class="ml-2">
+                        {{ mouths_name[selected_mouth.getMonth()] }}
+                    </h4>
+                </button>
+                <button v-on:click="changeMonth(1)"
+                        class="btn btn-light col-3"  style="padding: 0px">
+                    <h5 v-if="selected_mouth.getMonth() !== mouths_name.length - 1"
+                        class="ml-2">
+                        {{ mouths_name[selected_mouth.getMonth() + 1] }}> </h5>
+                    <h5 v-else="" class="ml-2">
+                        {{ mouths_name[0] }}>
+                    </h5>
+                </button>
+            </div>
+            <h4 class="col-3 mt-2">{{ selected_mouth.getFullYear() }}</h4>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-bordered" style="border-color: #a7c6d7">
+                <thead class="">
+                    <tr>
+                        <th v-for="day in days_of_week_names"
+                            scope="col" style="background: #f0f0f0">
+                            {{ day }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="week in calendar_list" >
+                        <td v-for="day in week" style="padding: 0px">
+                            <div v-if="is_equals_date(day, today)"
+                                 class="border border-primary border-5">
+                               <a v-bind:href="get_day_url(day)"
+                                  class="btn col align-self-center">
+                                   {{ day.getDate() }}
+                               </a>
+                            </div>
+                            <div v-else-if="day.getMonth() !== selected_mouth.getMonth()"
+                                 style="background: #eaeaea">
+                                 <a v-bind:href="get_day_url(day)"
+                                    class="btn col align-self-center">
+                                     {{ day.getDate() }}
+                                 </a>
+                            </div>
+                            <div v-else-if="day < today" style="background: #e1e1e1">
+                                 <a v-bind:href="get_day_url(day)"
+                                    class="btn col align-self-center">
+                                     {{ day.getDate() }}
+                                 </a>
+                            </div>
+                            <div v-else="" style="background: #f6f6f6">
+                                <a v-bind:href="get_day_url(day)"
+                                   class="btn col align-self-center">
+                                    {{ day.getDate() }}
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endverbatim %}
+<!--    {% load static %}-->
+<!--    <script  type="module" src="{% static 'js/calendarScripts/calendarVueApp.js' %}"></script>-->
+</div>
+
+
+    <script>
+        new Vue({
+            el: '#calendar',
+            data: {
+                settings:{
+                    zero_day: new Date(2021, 0),
+                    sunday_is_first_day: false,
+                },
+                today: null,
+                selected_mouth: null,
+                calendar_list: [],
+                mouths_name: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                days_of_week_names: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+            },
+            created(){
+                time_now = new Date();
+                this.today = new Date(
+                    time_now.getFullYear(), time_now.getMonth(), time_now.getDate());
+                this.selected_mouth = new Date(
+                    time_now.getFullYear(), time_now.getMonth());
+                this.calendar_list = this.get_calendar_list(
+                    time_now.getFullYear(), time_now.getMonth());
+            },
+
+            methods: {
+                days_in_month(year, month){
+                    let days_in_month;
+                    if(month === 1){
+                        if ((year % 4 === 0 && year % 100 !== 0)||year % 400 === 0){
+                            days_in_month = 29
+                        }else{
+                            days_in_month = 28
+                        }
+                    }else if( [0, 2, 4, 6, 7, 9, 11].indexOf(month) !== -1){
+                        days_in_month = 31
+                    }else {
+                        days_in_month = 30
+                    }
+                    return days_in_month
+                },
+
+                get_month_list(year, month){
+                    days = [];
+                    for(let day = 0; day < this.days_in_month(year, month); day++){
+                        days.push(new Date(year, month, day + 1))
+                    }
+                    return days
+                },
+
+                align_calendar_list(month_list){
+                    if (this.settings.sunday_is_first_day){
+                        first_day = 0;  last_day = 6;
+                    }else{
+                        first_day = 1;  last_day = 0;
+                    }
+                    while (month_list[0].getDay() !== first_day) {
+                            previous_day = new Date(month_list[0]);
+                            previous_day.setDate(previous_day.getDate() - 1);
+                            month_list.unshift(previous_day);
+                    }
+                    while (month_list[month_list.length - 1].getDay() !== last_day){
+                            next_day = new Date(month_list[month_list.length - 1]);
+                            next_day.setDate(next_day.getDate() + 1);
+                            month_list.push(next_day);
+                    }
+                    return month_list
+                },
+
+                get_calendar_list(year, month){
+                    days = this.align_calendar_list(
+                        this.get_month_list(year, month));
+                    calendar_list = [];
+                    weeks_amount = days.length/7;
+                    for(week = 0; week < weeks_amount; week++ ){
+                        days_in_week = [];
+                        for(week_day = 0; week_day < 7; week_day++){
+                            days_in_week.push(days.shift())
+                        }
+                        calendar_list.push(days_in_week)
+                    }
+                    return calendar_list
+                },
+
+                changeMonth(adding){
+                    new_selected_mouth = new Date(this.selected_mouth);
+                    new_selected_mouth.setMonth(
+                        new_selected_mouth.getMonth() + adding);
+                    this.selected_mouth = new_selected_mouth;
+
+                    this.calendar_list = this.get_calendar_list(
+                        this.selected_mouth.getFullYear(),
+                        this.selected_mouth.getMonth()
+                    );
+                },
+
+                is_equals_date(date1, date2){
+                    return date1.getDate() === date2.getDate()
+                        && date1.getMonth() === date2.getMonth()
+                        && date1.getFullYear() === date2.getFullYear();
+                },
+
+                get_day_url(day){
+                    slug = (day - this.settings.zero_day)/(24*60*60*1000);
+                    return '/schedule/day=' + slug + '/'
+                }
+            }
+        });
+    </script>
+</div>

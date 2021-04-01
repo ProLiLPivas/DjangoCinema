@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <form action="{{ seance.0.get_delete_url }}" method="post" >
+        {% csrf_token %}
+        <h3> Are u agree that u want to delete all seances with film
+            {{ seance.0.film }} at this day </h3>
+        <a href=" {{ seance.get_absolute_url }}"> Cancel </a>
+        <button type="submit" class="btn btn-danger">Delete </button>
+    </form>
+    <h6 class="mb-5"></h6>
+{% endblock %}

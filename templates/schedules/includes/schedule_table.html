@@ -1,0 +1,32 @@
+{% if films_seances %}
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <td>film</td>
+            <td>seances</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for film, seances in films_seances.items %}
+            <tr>
+                <td>{{ film.name }}</td>
+                <td>
+                    {% for seance in seances %}
+                    <a href="{{ seance.get_absolute_url }}">{{ seance.time }} </a>
+                    <a href="{{ seance.get_absolute_url }}del/" class="btn btn-warning p-0"> x </a>
+                    <a href="{{ seance.get_absolute_url }}upd/" class="btn btn-warning p-0"> o </a>,
+                    {% endfor %}
+                </td>
+                <td>
+                    <a class="btn btn-warning" href="film={{ film.id }}/add/">+</a>
+                </td>
+                <td>
+                    <a class="btn btn-warning" href="film={{ film.id }}/del/">x</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <h3>There is no seances this day</h3>
+{% endif %}

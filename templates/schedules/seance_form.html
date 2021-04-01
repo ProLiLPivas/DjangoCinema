@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <div id="timeline">
+        Date
+        <div class="card col-3">
+            <div class="card-body" style="padding: 6px">{{ day.date }} </div>
+        </div>
+
+        Film
+        <div class="card col-3">
+            <div class="card-body" style="padding: 6px">{{ film.name }}</div>
+        </div>
+
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="form-group col-3">
+                {% if field.errors %}
+                    <div class="alert alert-danger">
+                        {{ field.errors }}
+                    </div>
+                {% endif %}
+                {{ field.label }}
+                {{ field }}
+            </div>
+        {% endfor %}
+
+        <h6 class="mb-5"></h6>
+        <button type="submit" class="btn btn-warning">
+                Confirm
+        </button>
+    </form>
+
+     {% verbatim %}
+        {{ film_time }}
+         <div class=" chroma">
+             <div class="card-body">
+                 <table class="table table-bordered ml-3">
+                     <thead class="">
+                         <tr>
+                             <th v-for="time in time_intervals"
+                                 scope="col" style="padding: 0px">
+                                 <div class="ml-2 row col-3" style="padding: 0px">
+                                     <h6>
+                                         <small>{{ time.getHours() }}:</small>
+                                     </h6>
+                                     <h6 v-if="time.getMinutes() < 10">
+                                         <small>0</small>
+                                     </h6>
+                                     <h6>
+                                         <small>{{ time.getMinutes() }}</small>
+                                     </h6>
+                                 </div>
+                             </th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr>
+                             <td v-for="(time_, index)  in time_intervals"
+                                 class="" style="padding: 0px">
+                                 <table class="table-bordered col-1 mb-2 mt-2">
+                                     <tbody>
+                                         <tr>
+                                             <td v-for="(time, i) in 6"
+                                                 style="padding: 0px">
+                                                 <button v-bind:class="time_intervals_styles[index][i]">
+                                                <!--   v-on:mouseenter="tst(time_.getHours(), time_.getMinutes())"-->
+                                                 </button>
+                                             </td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                             </td>
+                         </tr>
+                     </tbody>
+
+                 </table>
+            </div>
+        </div>
+        {% endverbatim %}
+
+    </div>
+
+
+
+    <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip"
+        data-bs-placement="top" title="Tooltip on top">Tooltip on top</button>
+
+    <script>
+        new Vue({
+            el: '#timeline',
+            data: {
+                selected_date: null,
+                time_intervals: [],
+                time_intervals_styles:[['btn', 'btn', 'btn', 'btn', 'btn', 'btn',]],
+                time_intervals_collisions: [],
+
+                film_duration: 60*60*1000 + 38*60*1000 + 28*1000,
+                film_time: null,
+
+                time_cinema_open: 0,
+                time_cinema_close: 0,
+                time_intervals_amount: 24 * 2,
+                style: 'table-success'
+            },
+            created(){
+                date = new Date(0);
+                // this.selected_date = date;
+                this.time_intervals.push(date);
+                this.set_time_on_timeline();
+                this.show_duration_on_timeline([13,5], [15,38]);
+                this.show_duration_on_timeline([11,45], [12,38]);
+                this.show_duration_on_timeline([11,20], [12,0]);
+            },
+
+            methods: {
+                tst(hours, minutes){
+                  alert(hours + ': ' + minutes)
+                },
+
+                set_time_on_timeline(){
+                    for (i = 0; i < (this.time_intervals_amount)-1; i++){
+                        new_time = new Date(this.time_intervals[i]);
+                        new_time.setTime(new_time.getTime() + (1000*60*30));
+                        this.time_intervals.push(new_time);
+                        this.time_intervals_styles.push(
+                            ['btn', 'btn', 'btn', 'btn', 'btn', 'btn',]);
+                    }
+                },
+                show_duration_on_timeline(start, end){
+
+                    time_start = this.get_timeInterval_by_time(start[0], start[1]);
+                    time_end = this.get_timeInterval_by_time(end[0], end[1]);
+                    this.set_style_to_intervals(
+                        time_start[0], time_start[1], time_end[0], time_end[1])
+                },
+                set_interval_style(i, j){
+                    if(this.time_intervals_styles[i][j] !== 'btn btn-success'){
+                        this.time_intervals_styles[i][j] = 'btn btn-success';
+                    }else{
+                        this.time_intervals_styles[i][j] = 'btn btn-danger'
+                    }
+                },
+
+                set_style_to_intervals(
+                    num_start, num_start_inner, num_end, num_end_inner){
+
+                    for(i = num_start_inner; i < 6; i++){
+                        this.set_interval_style(num_start, i);
+                    }
+                    for(i = num_start + 1; i < num_end; i++){
+                        for(j = 0; j < 6; j++){
+                            this.set_interval_style(i, j);
+                        }
+                    }
+                    for(i = 0; i < num_end_inner; i++){
+                        this.set_interval_style(num_end, i);
+                    }
+
+                },
+                get_collisions(){
+
+                },
+
+                get_timeInterval_by_time(hour, minuets){
+                    for(i=0; i < this.time_intervals.length; i++){
+                        if (this.time_intervals[i].getHours() === hour &&
+                            this.time_intervals[i].getMinutes() <= minuets &&
+                            this.time_intervals[i].getMinutes()+29 > minuets) {
+                            j = Math.floor((minuets%30)/5);
+                            return [i, j]
+                        }
+                    }
+                },
+
+                round_time(time, round_down=false){
+                    minets = time.getMinutes();
+                    if(minets%5 !== 0){
+                        if(round_down){
+                            minets -= minets % 5;
+                        }else{
+                            minets += 5 - minets % 5;
+                        }
+                    }return minets
+                },
+            },
+        });
+    </script>>
+{% endblock %}

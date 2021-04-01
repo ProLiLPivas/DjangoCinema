@@ -1,0 +1,58 @@
+<div>
+    {% verbatim %}
+    <div class="col-3 mt-1">
+        {{selected_hall}}
+        <h6>hall number</h6>
+        <input v-model="selected_hall.number" type="number"
+               class="form-control col-3" >
+    </div>
+        <h6>is vip</h6>
+        <input v-model="selected_hall.is_vip" type="checkbox">
+    <table class="table-borderless ml-5 mb-3 mt-3">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th scope="col"
+                v-for="column_number, index in selected_hall.sites_amount">
+                <button v-on:click="remove_column(index)"
+                    class="btn btn-outline-dark mb-1"> x
+                </button>
+            </th>
+            <th>
+                <button  v-on:click="add_column()"
+                    class="btn btn-outline-dark mb-1">+
+                </button>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="line, index in selected_hall.rows">
+            <th scope="row" class="mr-4"> row {{ index + 1 }}</th>
+            <td v-for="site in line">
+                <button class="btn btn-warning" v-if="site.is_exist"
+                    v-on:click="remove_add_site(line, site)" >
+                    {{ site.site_number}}
+                </button>
+                <button v-else="" v-on:click="remove_add_site(line, site)"
+                    class="btn btn-light"></button>
+            </td>
+            <td>
+                <button v-on:click="remove_row(index)"
+                    class="btn btn-outline-dark ml-1">x
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">add row</th>
+            <td>
+                <button v-on:click="add_row"
+                    class="btn btn-outline-dark mt-1">+
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    {% endverbatim %}
+
+    <button v-on:click="update_hall()" class="btn btn-warning ml-5">Apply</button>
+</div>

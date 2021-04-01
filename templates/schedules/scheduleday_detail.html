@@ -1,0 +1,31 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+    <h2 class="mb-2 mt-3 ml-3"> {{ day }} </h2>
+
+    <div class="col align-self-end">
+        {% include 'schedules/includes/calendar.html' %}
+    </div>
+
+     <div class="dropdown mb-2">
+         <a class="btn btn-warning dropdown-toggle" role="button"
+            id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+             Add film
+         </a>
+         <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+             {% for film in films %}
+                 <li>
+                     <a class="dropdown-item" href="film={{ film.id }}/add/">
+                         {{ film.name }}
+                     </a>
+                 </li>
+             {% endfor %}
+         </ul>
+    </div>
+
+    <div class="col-9 mb-4 ml-4">
+        {% include 'schedules/includes/schedule_table.html' %}
+    </div>
+
+{% endblock %}

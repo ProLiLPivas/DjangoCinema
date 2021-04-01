@@ -1,0 +1,78 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+    <div id="create_hall" class="col-3">
+        <h3>Creating new hall</h3>
+        <h4 class="mt-3">cinema</h4>
+        <div class="card">
+            <div class="card-body" style="padding: 6px">{{ cinema.title }}</div>
+        </div>
+        <form action="{{cinema.get_create_url}}" method="post">
+            {% csrf_token %}
+            <h4 class="mt-3">set hall name</h4>
+            {{ form.number }}
+            <h4 class="mt-3">set hall size</h4>
+            <div class="row col-8">
+                <div class="">
+                    <h6 class="mr-3 ml-5">rows amount</h6>
+                    <div class="row col">
+                        <button v-on:click.submit.prevent="edit_size(true, false)"
+                                class="btn btn-outline-dark col-3">-</button>
+                        {{ form.rows_amount }}
+                        <button v-on:click.submit.prevent="edit_size()"
+                                class="btn btn-outline-dark col-3">+</button>
+                    </div>
+                </div>
+                <div class="mt-3 mb-4">
+                    <h6 class="mr-3 ml-5">sites amount</h6>
+                    <div class="row col">
+                        <button v-on:click.submit.prevent="edit_size(false, false)"
+                                class="btn btn-outline-dark col-3">-</button>
+                        {{ form.sites_amount }}
+                        <button v-on:click.submit.prevent="edit_size(false)"
+                                class="btn btn-outline-dark col-3">+</button>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <h6 class="col">is vip </h6>
+                    {{ form.is_vip }}
+                </div>
+
+
+                    <button  class="btn btn-warning col-6">Create</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        new Vue({
+            el: '#create_hall',
+            data:{
+
+                rows_amount: 1,
+                sites_amount: 1,
+            },
+            methods:{
+                edit_size(is_add_rows=true, is_add=true){
+                    if(is_add_rows){
+                        variable = this.rows_amount;
+                    }else {
+                        variable = this.sites_amount;
+                    }
+                    if(is_add){
+                        variable = Number(variable) + 1
+                    }else{
+                        if(variable !== 1){
+                            variable = Number(variable) - 1
+                        }
+                    }
+                    if(is_add_rows){
+                        this.rows_amount = variable;
+                    }else {
+                        this.sites_amount = variable;
+                    }
+                }
+            }
+        })
+    </script>
+{% endblock %}

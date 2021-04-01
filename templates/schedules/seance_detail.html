@@ -1,0 +1,66 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+    <div class="row">
+
+        <div id="hall" class="col-10 mt-3">
+            <h4>{{ seance.hall.cinema}}</h4>
+            <h4><strong>Hall number {{ seance.hall.number }}</strong></h4>
+
+            {% include '../cinema/includes/hall_scheme_template.html' %}
+
+
+            <div v-if="selected_sites.length !== 0" class="ml-5">
+            {% verbatim %}
+                <div class="row">
+                    <div v-for="site in selected_sites">
+                        site: {{site.site_number}} row: {{ site.row}},
+                    </div>
+                    <div>
+                        tickets amount: {{selected_sites.length }},
+                        price: {{ selected_sites.length * site_price }}$
+                    </div>
+                </div>
+                <button class="btn btn-warning">Buy</button>
+                <button class="btn btn-secondary">Reserve</button>
+            {% endverbatim %}
+            </div>
+        </div>
+    </div>
+
+     {% include './includes/SCRIPT.html' %}
+    <script>
+        new Vue({
+            el: '#hall',
+            data: {
+                selected_hall: null,
+                selected_sites: [],
+                site_price: 100,
+                is_reserving: false,
+                is_buying: false,
+            },
+            created(){
+                makeAjaxRequest('get', "/schedule/seance={{slug}}/" )
+                    .then(response => {
+                        this.selected_hall = new Seance(response.data.seance);
+                        //console.log(response.data.hall);
+                    });
+            },
+            methods: {
+                choose_site: function (site_obj) {
+                    index_of = this.selected_sites.indexOf(site_obj);
+                    if (index_of === -1) {
+                        this.selected_sites.push(site_obj);
+                        site_obj.is_selected = true;
+                    } else {
+                        delete this.selected_sites.splice(index_of, 1);
+                        site_obj.is_selected = false;
+                    }
+                },
+            }
+        });
+    </script>
+
+
+{%endblock%}

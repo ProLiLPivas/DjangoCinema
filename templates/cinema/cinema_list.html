@@ -1,0 +1,9 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+    {% for cinema in cinemas %}
+        <a href="{{ cinema.get_absolute_url }}">{{ cinema.title }}</a>
+    {% endfor %}
+<p><a class="btn btn-warning" href="{% url 'cinema_create_url'%}">add new cinema</a></p>
+{% endblock %}

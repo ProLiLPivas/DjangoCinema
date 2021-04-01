@@ -1,0 +1,26 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+    <div>
+        <h3>{{cinema.title}}</h3>
+        <a href="{{cinema.get_delete_url}}" class="btn btn-warning">x</a>
+        <a href="{{cinema.get_update_url}}" class="btn btn-warning">o</a>
+    </div>
+    <div class="row">
+        {% if halls %}
+        <div class="col-2 mt-4 ">
+            <p><strong>Other halls</strong></p>
+            {% for h in halls %}
+                <p><a href="{{h.get_absolute_url}}" class="btn btn-light">
+                    Hall #{{ h.number }}
+                </a></p>
+            {% endfor %}
+        </div>
+        {% else %}
+        <h3>u dont have any halls in this cinema yet, u need create them</h3>
+        {% endif %}
+
+    </div>
+    <a class="btn btn-warning" href="{{cinema.get_create_url}}">+</a>
+{% endblock %}
